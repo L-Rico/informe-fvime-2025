@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informe | Proyectos Fondo VIME 2025</title>
+    <title>Reporte VIME 2025 | Sistema Integral Completo</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -49,6 +49,8 @@
         .btn-back { background: #e2e8f0; color: #475569; }
         .btn-next { background: var(--primary); color: white; }
         .btn-next:hover { background: var(--primary-dark); }
+        .btn-send { background: var(--success); color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
+        .btn-send:hover { background: #059669; transform: translateY(-1px); }
         .btn-add { background: var(--success); color: white; width: 100%; margin: 1rem 0; box-shadow: 0 2px 4px rgba(16,185,129,0.2); }
 
         #saveStatus { position: fixed; bottom: 20px; right: 20px; font-size: 0.7rem; background: #1e293b; color: white; padding: 0.5rem 1rem; border-radius: 20px; opacity: 0; transition: 0.3s; z-index: 2000; }
@@ -92,10 +94,10 @@
     <form id="vimeForm">
         <div class="section-card active">
             <h1>1. Identificación del Proyecto</h1>
-            <div class="instruction">Complete los datos básicos del proyecto ejecutado.</div>
+            <div class="instruction">Complete los datos básicos del proyecto aprobado.</div>
             <div class="grid">
                 <div class="f-group"><label>Título del Proyecto</label><input type="text" name="p1_titulo"></div>
-                <div class="f-group"><label>ID de Proyecto</label><input type="text" name="p1_id"></div>
+                <div class="f-group"><label>Código VIME</label><input type="text" name="p1_id"></div>
             </div>
             <div class="grid">
                 <div class="f-group"><label>Unidad Académica</label><input type="text" name="p1_unidad"></div>
@@ -257,7 +259,7 @@
 
         <div class="section-card">
             <h1>11. Presencia en Medios y RRSS</h1>
-            <div class="instruction">Links a noticias, publicaciones en prensa o redes sociales del proyecto.</div>
+            <div class="instruction">Revise sus datos. Al presionar "Finalizar" se descargará el reporte Excel consolidado.</div>
             <div id="cont_p11">
                 <div class="dynamic-row">
                     <div class="grid">
@@ -269,7 +271,7 @@
             <button type="button" class="btn btn-add" onclick="addRow('cont_p11')">+ Añadir Enlace</button>
             <div class="nav-actions">
                 <button type="button" class="btn btn-back" onclick="showStep(9)">← Atrás</button>
-                <button type="button" class="btn btn-next" style="background: var(--success);" onclick="exportExcel()">DESCARGAR REPORTE EXCEL</button>
+                <button type="button" class="btn btn btn-send" onclick="exportExcel()">✓ FINALIZAR Y ENVIAR</button>
             </div>
         </div>
 
@@ -333,19 +335,26 @@
             const data = JSON.parse(saved);
             Object.keys(data).forEach(key => {
                 const input = form.querySelector(`[name="${key}"]`);
-                if(input) input.value = data[key];
+                if(input) {
+                   if (input.type !== 'file') input.value = data[key];
+                }
             });
         }
     };
 
     function exportExcel() {
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.form_to_sheet(form);
-        XLSX.utils.book_append_sheet(wb, ws, "Reporte_Completo");
-        XLSX.writeFile(wb, "Reporte_VIME_Final.xlsx");
+        try {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.form_to_sheet(form);
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte_VIME_2025");
+            XLSX.writeFile(wb, "Reporte_Final_VIME_2025.xlsx");
+            
+            alert("¡Reporte generado con éxito! El archivo Excel se ha descargado.");
+        } catch (e) {
+            alert("Error al generar el reporte: " + e.message);
+        }
     }
 </script>
 
 </body>
 </html>
-
