@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte VIME 2025 | Sistema Integral Completo</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb; --primary-dark: #1e40af; --secondary: #64748b;
+            --bg: #f8fafc; --card: #ffffff; --text: #1e293b;
+            --border: #e2e8f0; --accent: #fef9c3; --success: #10b981;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; }
+
+        /* SIDEBAR RESPONSIVO */
+        nav { width: 280px; background: #0f172a; color: white; padding: 1.5rem; position: fixed; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s; }
+        nav h2 { font-size: 0.9rem; color: var(--primary); margin-bottom: 1.5rem; border-bottom: 1px solid #1e293b; padding-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        nav ul { list-style: none; padding: 0; }
+        nav li { padding: 0.7rem; border-radius: 6px; margin-bottom: 0.2rem; cursor: pointer; font-size: 0.8rem; color: #94a3b8; transition: 0.2s; border-left: 3px solid transparent; }
+        nav li:hover { background: rgba(255,255,255,0.05); color: white; }
+        nav li.active { background: var(--primary); color: white; font-weight: 600; border-left: 3px solid var(--success); }
+
+        /* MAIN CONTENT */
+        main { flex: 1; margin-left: 280px; padding: 2rem; max-width: 1100px; width: 100%; }
+        .section-card { display: none; background: var(--card); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 80px; }
+        .section-card.active { display: block; animation: fadeIn 0.3s; }
+
+        .instruction { background: var(--accent); border-left: 4px solid #eab308; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; border-radius: 4px; line-height: 1.4; }
+
+        /* FORMULARIOS */
+        h1 { font-size: 1.4rem; margin-bottom: 1.5rem; color: #0f172a; border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin-bottom: 1rem; }
+        .f-group { display: flex; flex-direction: column; margin-bottom: 1rem; }
+        label { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--secondary); text-transform: uppercase; }
+        input, select, textarea { padding: 0.7rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; width: 100%; }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        
+        /* FILAS DINÁMICAS */
+        .dynamic-row { border: 1px solid var(--border); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; position: relative; background: #fafafa; }
+        .btn-remove { position: absolute; top: 10px; right: 10px; color: #ef4444; cursor: pointer; font-size: 0.7rem; font-weight: bold; padding: 5px; border: 1px solid #fee2e2; border-radius: 4px; }
+        .btn-remove:hover { background: #fee2e2; }
+
+        /* BOTONES NAVEGACIÓN */
+        .nav-actions { display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); gap: 10px; }
+        .btn { padding: 0.8rem 1.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-back { background: #e2e8f0; color: #475569; }
+        .btn-next { background: var(--primary); color: white; }
+        .btn-next:hover { background: var(--primary-dark); }
+        .btn-add { background: var(--success); color: white; width: 100%; margin: 1rem 0; box-shadow: 0 2px 4px rgba(16,185,129,0.2); }
+
+        #saveStatus { position: fixed; bottom: 20px; right: 20px; font-size: 0.7rem; background: #1e293b; color: white; padding: 0.5rem 1rem; border-radius: 20px; opacity: 0; transition: 0.3s; z-index: 2000; }
+
+        /* RESPONSIVO */
+        .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: var(--primary); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+
+        @media (max-width: 1024px) {
+            nav { transform: translateX(-280px); }
+            nav.open { transform: translateX(0); }
+            main { margin-left: 0; padding: 1rem; padding-top: 4rem; }
+            .menu-btn { display: block; }
+            .nav-actions { flex-direction: column-reverse; }
+            .btn { width: 100%; }
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰ Menú</div>
+
+<nav id="sidebar">
+    <h2>Reporte VIME 2025</h2>
+    <ul id="menu">
+        <li class="active" onclick="showStep(0)">1. Identificación</li>
+        <li onclick="showStep(1)">2. Evaluación</li>
+        <li onclick="showStep(2)">3. Agentes del Entorno</li>
+        <li onclick="showStep(3)">4. Equipo de Trabajo</li>
+        <li onclick="showStep(4)">5. Beneficiarios Int.</li>
+        <li onclick="showStep(5)">6. Indicadores</li>
+        <li onclick="showStep(6)">7. Docencia VIME</li>
+        <li onclick="showStep(7)">8. Investigación</li>
+        <li onclick="showStep(8)">9. Tesis</li>
+        <li onclick="showStep(9)">10. Ed. Continua</li>
+        <li onclick="showStep(10)">11. Medios</li>
+    </ul>
+</nav>
+
+<main>
+    <form id="vimeForm">
+        <div class="section-card active">
+            <h1>1. Identificación del Proyecto</h1>
+            <div class="instruction">Complete los datos básicos del proyecto aprobado.</div>
+            <div class="grid">
+                <div class="f-group"><label>Título del Proyecto</label><input type="text" name="p1_titulo"></div>
+                <div class="f-group"><label>Código VIME</label><input type="text" name="p1_id"></div>
+            </div>
+            <div class="grid">
+                <div class="f-group"><label>Unidad Académica</label><input type="text" name="p1_unidad"></div>
+                <div class="f-group"><label>Director/a de Proyecto</label><input type="text" name="p1_director"></div>
+            </div>
+            <div class="nav-actions"><span></span><button type="button" class="btn btn-next" onclick="showStep(1)">Siguiente Paso →</button></div>
+        </div>
+
+        <div class="section-card">
+            <h1>2. Evaluación de Resultados</h1>
+            <div class="instruction">Análisis cualitativo del cumplimiento de objetivos.</div>
+            <div class="f-group"><label>Resultados y Logros principales</label><textarea name="p2_logros" rows="4"></textarea></div>
+            <div class="f-group"><label>Dificultades y medidas adoptadas</label><textarea name="p2_dificultades" rows="4"></textarea></div>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(0)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(2)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>3. Agentes del Entorno</h1>
+            <div class="instruction">Organizaciones externas vinculadas directamente.</div>
+            <div id="cont_p3">
+                <div class="dynamic-row">
+                    <span class="btn-remove" onclick="this.parentElement.remove(); autoSave();">Eliminar ×</span>
+                    <div class="grid">
+                        <div class="f-group"><label>Nombre Organización</label><input type="text" name="p3_org[]"></div>
+                        <div class="f-group"><label>Cantidad de personas beneficiarias</label><input type="number" name="p3_cant[]" value="0" min="0"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addRow('cont_p3')">+ Añadir Agente</button>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(1)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(3)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>4. Equipo de Trabajo</h1>
+            <div id="cont_p4">
+                <div class="dynamic-row">
+                    <span class="btn-remove" onclick="this.parentElement.remove(); autoSave();">Eliminar ×</span>
+                    <div class="grid">
+                        <div class="f-group"><label>Nombre Integrante</label><input type="text" name="p4_nom[]"></div>
+                        <div class="f-group"><label>RUT</label><input type="text" name="p4_rut[]"></div>
+                        <div class="f-group"><label>Función</label><input type="text" name="p4_rol[]"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addRow('cont_p4')">+ Añadir Integrante</button>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(2)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(4)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>5. Beneficiarios Internos (USACH)</h1>
+            <div class="instruction">Indique la cantidad de integrantes de la comunidad universitaria.</div>
+            <div class="grid">
+                <div class="f-group"><label>N° Estudiantes Pregrado</label><input type="number" name="p5_pre" value="0"></div>
+                <div class="f-group"><label>N° Estudiantes Postgrado</label><input type="number" name="p5_post" value="0"></div>
+                <div class="f-group"><label>N° Académicos/as</label><input type="number" name="p5_aca" value="0"></div>
+            </div>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(3)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(5)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>6. Indicadores de Gestión</h1>
+            <div id="cont_p6">
+                <div class="dynamic-row">
+                    <div class="grid">
+                        <div class="f-group"><label>Indicador Comprometido</label><input type="text" name="p6_ind[]"></div>
+                        <div class="f-group"><label>Meta Lograda (%)</label><input type="number" name="p6_meta[]" value="0" max="100"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addRow('cont_p6')">+ Añadir Indicador</button>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(4)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(6)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>7. Docencia VIME</h1>
+            <div class="instruction">Módulos o asignaturas vinculadas al proyecto.</div>
+            <div id="cont_p7">
+                <div class="dynamic-row">
+                    <div class="grid">
+                        <div class="f-group"><label>Nombre Asignatura</label><input type="text" name="p7_asig[]"></div>
+                        <div class="f-group"><label>N° de Estudiantes</label><input type="number" name="p7_n[]" value="0"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addRow('cont_p7')">+ Añadir Asignatura</button>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(5)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(7)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>8. Investigación VIME</h1>
+            <div class="instruction">Publicaciones, congresos o productos de investigación resultantes.</div>
+            <div id="cont_p8">
+                <div class="dynamic-row">
+                    <div class="grid">
+                        <div class="f-group"><label>Tipo de Producto</label><select name="p8_tipo[]"><option>Paper</option><option>Libro</option><option>Congreso</option></select></div>
+                        <div class="f-group"><label>Título / Descripción</label><input type="text" name="p8_desc[]"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addRow('cont_p8')">+ Añadir Producto</button>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(6)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(8)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>9. Tesis VIME</h1>
+            <div class="instruction">Trabajos de graduación o tesis vinculadas al territorio o agente.</div>
+            <div id="cont_p9">
+                <div class="dynamic-row">
+                    <div class="grid">
+                        <div class="f-group"><label>Título Tesis</label><input type="text" name="p9_tit[]"></div>
+                        <div class="f-group"><label>Estudiante</label><input type="text" name="p9_est[]"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addRow('cont_p9')">+ Añadir Tesis</button>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(7)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(9)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>10. Educación Continua</h1>
+            <div id="cont_p10">
+                <div class="dynamic-row">
+                    <div class="grid">
+                        <div class="f-group"><label>Nombre Curso/Diplomado</label><input type="text" name="p10_nom[]"></div>
+                        <div class="f-group"><label>N° Inscritos</label><input type="number" name="p10_n[]" value="0"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addRow('cont_p10')">+ Añadir Programa</button>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(8)">← Atrás</button>
+                <button type="button" class="btn btn-next" onclick="showStep(10)">Siguiente Paso →</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h1>11. Presencia en Medios y RRSS</h1>
+            <div class="instruction">Links a noticias, publicaciones en prensa o redes sociales del proyecto.</div>
+            <div id="cont_p11">
+                <div class="dynamic-row">
+                    <div class="grid">
+                        <div class="f-group"><label>Medio</label><input type="text" name="p11_medio[]"></div>
+                        <div class="f-group"><label>Enlace (URL)</label><input type="url" name="p11_url[]"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addRow('cont_p11')">+ Añadir Enlace</button>
+            <div class="nav-actions">
+                <button type="button" class="btn btn-back" onclick="showStep(9)">← Atrás</button>
+                <button type="button" class="btn btn-next" style="background: var(--success);" onclick="exportExcel()">DESCARGAR REPORTE EXCEL</button>
+            </div>
+        </div>
+
+    </form>
+</main>
+
+<div id="saveStatus">Guardado automáticamente</div>
+
+<script>
+    let currentIdx = 0;
+    const sections = document.querySelectorAll('.section-card');
+    const menuItems = document.querySelectorAll('nav li');
+    const form = document.getElementById('vimeForm');
+
+    function showStep(idx) {
+        sections[currentIdx].classList.remove('active');
+        menuItems[currentIdx].classList.remove('active');
+        currentIdx = idx;
+        sections[currentIdx].classList.add('active');
+        menuItems[currentIdx].classList.add('active');
+        window.scrollTo(0, 0);
+        if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
+    }
+
+    function addRow(id) {
+        const cont = document.getElementById(id);
+        const clone = cont.children[0].cloneNode(true);
+        clone.querySelectorAll('input').forEach(i => i.value = (i.type === 'number' ? 0 : ''));
+        if(!clone.querySelector('.btn-remove')) {
+            const del = document.createElement('span');
+            del.className = 'btn-remove';
+            del.innerText = 'Eliminar ×';
+            del.onclick = function() { this.parentElement.remove(); autoSave(); };
+            clone.appendChild(del);
+        }
+        cont.appendChild(clone);
+        autoSave();
+    }
+
+    function autoSave() {
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((val, key) => {
+            if(!data[key]) data[key] = val;
+            else {
+                if(!Array.isArray(data[key])) data[key] = [data[key]];
+                data[key].push(val);
+            }
+        });
+        localStorage.setItem('vime_2025_full', JSON.stringify(data));
+        const st = document.getElementById('saveStatus');
+        st.style.opacity = '1';
+        setTimeout(() => st.style.opacity = '0', 1500);
+    }
+
+    form.addEventListener('input', autoSave);
+
+    window.onload = () => {
+        const saved = localStorage.getItem('vime_2025_full');
+        if(saved) {
+            const data = JSON.parse(saved);
+            Object.keys(data).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if(input) input.value = data[key];
+            });
+        }
+    };
+
+    function exportExcel() {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.form_to_sheet(form);
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte_Completo");
+        XLSX.writeFile(wb, "Reporte_VIME_Final.xlsx");
+    }
+</script>
+
+</body>
+</html>
